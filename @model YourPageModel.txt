@@ -1,0 +1,82 @@
+@model YourPageModel
+
+@{
+    ViewData["Title"] = "Registration";
+}
+
+@if (Model.RegistrationSuccess)
+{
+    <p>Registration successful!</p>
+}
+else
+{
+    <form method="post">
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" required>
+
+        <label for="login">Login:</label>
+        <input type="text" id="login" name="login" required>
+
+        <label for="nom">Nom:</label>
+        <input type="text" id="nom" name="nom" pattern="[A-Za-z]+" required>
+
+        <label for="password">Mot de passe:</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="confirmation">Confirmation de mot de passe:</label>
+        <input type="password" id="confirmation" name="confirmation" required>
+
+        <input type="submit" value="Submit">
+    </form>
+}
+
+@code {
+    public class YourPageModel : PageModel
+    {
+        public bool RegistrationSuccess { get; set; }
+
+        public void OnPost(string email, string login, string nom, string password, string confirmation, int lockout)
+        {
+            // Your C# logic goes here
+            int tentatives = 0;
+            string role = "user";
+
+            if (!string.IsNullOrEmpty(login) && System.Text.RegularExpressions.Regex.IsMatch(login, "^0[1-9]\\d{8}$")
+                && !string.IsNullOrEmpty(nom) && System.Text.RegularExpressions.Regex.IsMatch(nom, "^[A-Za-z\\s]+$")
+                && int.TryParse(lockout, out int lockoutValue) && int.TryParse(tentatives, out int tentativesValue)
+                && password == confirmation)
+            {
+                string hashedPassword = CalculateMD5Hash(password);
+
+                // Your further code logic goes here
+                // Use hashedPassword, role, and tentativesValue for inserting data into the database
+
+                RegistrationSuccess = true;
+            }
+            else
+            {
+                // Registration failed, handle accordingly
+                RegistrationSuccess = false;
+            }
+        }
+
+        private string CalculateMD5Hash(string input)
+        {
+            // Implement MD5 hash logic here
+            // This is a basic example, consider using a more secure hashing algorithm
+            using (var md5 = System.Security.Cryptography.MD5.Create())
+            {
+                byte[] inputBytes = System.Text.Encoding.UTF8.GetBytes(input);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                // Convert the byte array to a hexadecimal string
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++)
+                {
+                    sb.Append(hashBytes[i].ToString("X2"));
+                }
+                return sb.ToString();
+            }
+        }
+    }
+}
